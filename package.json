@@ -1,0 +1,28 @@
+{
+  "name": "engram-helper",
+  "version": "0.1.0",
+  "description": "Linh thú học tiếng Anh chạy nền trên desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable"
+  },
+  "author": "Jaki",
+  "license": "ISC",
+  "dependencies": {
+    "ts-fsrs": "^4.1.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.jaki.engramhelper",
+    "productName": "Engram Helper",
+    "files": ["main.js", "preload.js", "renderer/**", "assets/**"],
+    "win": {
+      "target": "portable",
+      "icon": "assets/tray-icon.png"
+    }
+  }
+}

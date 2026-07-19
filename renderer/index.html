@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Engram Helper</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="pet" title="Bấm vào tôi!">
+    <svg viewBox="0 0 100 100" width="72" height="72">
+      <ellipse cx="50" cy="60" rx="34" ry="26" fill="#3F6E52"/>
+      <ellipse cx="50" cy="60" rx="34" ry="26" fill="url(#shade)" opacity="0.25"/>
+      <circle cx="30" cy="34" r="10" fill="#3F6E52"/>
+      <circle cx="70" cy="34" r="10" fill="#3F6E52"/>
+      <circle cx="30" cy="34" r="5" fill="#EAE3D0"/>
+      <circle cx="70" cy="34" r="5" fill="#EAE3D0"/>
+      <circle id="eyeL" cx="38" cy="55" r="4.5" fill="#1B2A3A"/>
+      <circle id="eyeR" cx="62" cy="55" r="4.5" fill="#1B2A3A"/>
+      <path d="M42 68 Q50 74 58 68" stroke="#1B2A3A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#000000"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div id="badge"></div>
+  </div>
+
+  <!-- Bong bóng nhắc nhẹ, tự ẩn nếu không tương tác -->
+  <div id="bubble">Có 1 từ cần ôn — bấm vào tôi</div>
+
+  <div id="popup">
+    <div class="popup-inner">
+      <div class="popup-label" id="popupLabel">Ôn tập</div>
+      <div class="popup-text" id="popupText"></div>
+
+      <button id="revealBtn">Xem đáp án</button>
+      <div class="popup-answer" id="popupAnswer" style="display:none;"></div>
+
+      <div id="ratingArea" style="display:none;">
+        <div class="rating-hint">Bạn nhớ tới đâu?</div>
+        <div class="rating-row">
+          <button class="rate again" data-rating="1">Quên</button>
+          <button class="rate hard" data-rating="2">Khó</button>
+          <button class="rate good" data-rating="3">Được</button>
+          <button class="rate easy" data-rating="4">Dễ</button>
+        </div>
+      </div>
+
+      <button id="closeBtn">Đóng</button>
+    </div>
+  </div>
+
+  <script src="pet.js"></script>
+</body>
+</html>
