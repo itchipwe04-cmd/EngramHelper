@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Cài đặt API Key</title>
+<style>
+  body{
+    margin:0; padding:24px;
+    font-family:'Courier New', monospace;
+    background:#EAE3D0; color:#1B2A3A;
+  }
+  h2{ font-family: Georgia, serif; font-size:18px; margin:0 0 6px; }
+  p.hint{ font-size:12px; color:#4A5A68; margin:0 0 16px; line-height:1.5; }
+  label{ font-size:12px; text-transform:uppercase; letter-spacing:1px; color:#4A5A68; }
+  input[type=text], input[type=password]{
+    width:100%; box-sizing:border-box; padding:10px 12px;
+    font-family:inherit; font-size:14px;
+    border:2px solid #1B2A3A; background:#F5F0E2; color:#1B2A3A;
+    margin:6px 0 14px;
+  }
+  button{
+    padding:10px 18px; font-family:inherit; font-size:13px;
+    letter-spacing:1px; text-transform:uppercase;
+    background:#1B2A3A; color:#EAE3D0; border:none; cursor:pointer;
+  }
+  #status{ margin-top:14px; font-size:13px; }
+  .ok{ color:#3F6E52; font-weight:bold; }
+  a{ color:#A8502B; }
+</style>
+</head>
+<body>
+  <h2>Cài đặt Gemini API Key</h2>
+  <p class="hint">Cần key này để linh thú gọi AI sinh thẻ ôn tập / phân tích giáo trình. Lấy miễn phí tại
+  <a href="#" id="linkKey">aistudio.google.com/apikey</a> (mở bằng trình duyệt).</p>
+
+  <label>API Key</label>
+  <input id="keyInput" type="password" placeholder="Dán API key vào đây">
+
+  <label>Model (mặc định gemini-flash-latest, sửa nếu cần)</label>
+  <input id="modelInput" type="text" value="gemini-flash-latest">
+
+  <button id="saveBtn">Lưu</button>
+  <div id="status"></div>
+
+  <script src="api-key.js"></script>
+</body>
+</html>

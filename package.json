@@ -1,7 +1,7 @@
 {
   "name": "engram-helper",
   "version": "0.1.0",
-  "description": "Linh thú học tiếng Anh chạy nền trên desktop",
+  "description": "Trợ thủ học tập chạy nền trên desktop, nhắc ôn tập theo lịch FSRS",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -10,6 +10,9 @@
   "author": "Jaki",
   "license": "ISC",
   "dependencies": {
+    "mammoth": "^1.12.0",
+    "pdf-parse": "^2.4.5",
+    "tesseract.js": "^5.1.1",
     "ts-fsrs": "^4.1.0"
   },
   "devDependencies": {
@@ -19,7 +22,19 @@
   "build": {
     "appId": "com.jaki.engramhelper",
     "productName": "Engram Helper",
-    "files": ["main.js", "preload.js", "renderer/**", "assets/**"],
+    "files": [
+      "main.js",
+      "preload.js",
+      "scheduler.js",
+      "config.js",
+      "content-generator.js",
+      "doc-extract.js",
+      "ocr.js",
+      "screen-translate.js",
+      "tessdata/**",
+      "renderer/**",
+      "assets/**"
+    ],
     "win": {
       "target": "portable",
       "icon": "assets/tray-icon.png"

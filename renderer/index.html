@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="pet" title="Bấm vào tôi!">
+  <div id="pet">
     <svg viewBox="0 0 100 100" width="72" height="72">
       <ellipse cx="50" cy="60" rx="34" ry="26" fill="#3F6E52"/>
       <ellipse cx="50" cy="60" rx="34" ry="26" fill="url(#shade)" opacity="0.25"/>
@@ -32,11 +32,21 @@
 
   <div id="popup">
     <div class="popup-inner">
-      <div class="popup-label" id="popupLabel">Ôn tập</div>
-      <div class="popup-text" id="popupText"></div>
+      <div class="popup-header" id="popupHeader">
+        <div class="popup-label" id="popupLabel">Ôn tập</div>
+        <button id="popupXBtn" title="Đóng (Esc)">✕</button>
+      </div>
+      <div class="text-row">
+        <div class="popup-text" id="popupText"></div>
+        <button class="speakBtn" id="speakTextBtn" title="Đọc lên">🔊</button>
+      </div>
 
+      <textarea id="yourAnswerInput" placeholder="Gõ câu trả lời của bạn ở đây trước khi xem đáp án (không bắt buộc)..." rows="2"></textarea>
       <button id="revealBtn">Xem đáp án</button>
-      <div class="popup-answer" id="popupAnswer" style="display:none;"></div>
+      <div class="text-row" id="answerRow" style="display:none;">
+        <div class="popup-answer" id="popupAnswer"></div>
+        <button class="speakBtn" id="speakAnswerBtn" title="Đọc lên">🔊</button>
+      </div>
 
       <div id="ratingArea" style="display:none;">
         <div class="rating-hint">Bạn nhớ tới đâu?</div>

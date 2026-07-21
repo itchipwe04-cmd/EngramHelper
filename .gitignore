@@ -7,6 +7,9 @@ npm-debug.log*
 # Dữ liệu tiến độ học cục bộ (sinh ra lúc chạy, không phải source code)
 engram-cards.json
 
+# Chứa API key riêng tư -- TUYỆT ĐỐI không commit lên GitHub
+config.json
+
 # OS
 .DS_Store
 Thumbs.db

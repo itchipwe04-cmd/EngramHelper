@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld('engramAPI', {
   answerCard: (id, rating) => ipcRenderer.invoke('answer-card', { id, rating }),
   releasePending: (id) => ipcRenderer.send('release-pending', id),
   dueCount: () => ipcRenderer.invoke('due-count'),
+  translateClipboard: () => ipcRenderer.invoke('translate-clipboard'),
+  setFocusable: (focusable) => ipcRenderer.send('set-focusable', focusable),
 });

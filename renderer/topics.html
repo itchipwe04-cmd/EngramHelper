@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý chủ đề</title>
+<style>
+  body{
+    margin:0; padding:20px;
+    font-family:'Courier New', monospace;
+    background:#EAE3D0; color:#1B2A3A;
+  }
+  h2{ font-family: Georgia, serif; font-size:18px; margin:0 0 4px; }
+  p.hint{ font-size:12px; color:#4A5A68; margin:0 0 14px; }
+  table{ width:100%; border-collapse:collapse; background:#F5F0E2; border:2px solid #1B2A3A; }
+  th{
+    text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1px;
+    padding:8px 10px; background:#1B2A3A; color:#EAE3D0;
+  }
+  td{ padding:8px 10px; font-size:13px; border-top:1px solid #C7BC9C; vertical-align:middle; }
+  tr:nth-child(odd) td{ background: rgba(0,0,0,0.02); }
+  .num{ color:#4A5A68; font-size:12px; white-space:nowrap; }
+  .due{ color:#A8502B; font-weight:bold; }
+  input[type=checkbox]{ width:16px; height:16px; cursor:pointer; }
+  #empty{ font-size:13px; color:#4A5A68; padding:20px; text-align:center; display:none; }
+
+  .actions{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
+  .qtyInput{
+    width:48px; font-family:inherit; font-size:12px;
+    padding:4px; border:1px solid #1B2A3A; background:#FFFDF7; color:#1B2A3A;
+  }
+  .genBtn, .delBtn{
+    font-family:inherit; font-size:11px; letter-spacing:0.5px;
+    padding:5px 8px; border:none; cursor:pointer;
+  }
+  .genBtn{ background:#3F6E52; color:#EAE3D0; }
+  .genBtn:disabled{ opacity:0.5; cursor:default; }
+  .delBtn{ background:transparent; color:#A8502B; border:1px solid #A8502B; }
+  .jobProgress{ font-size:11px; color:#3F6E52; margin-top:4px; }
+  .jobError{ font-size:11px; color:#A8502B; margin-top:4px; }
+</style>
+</head>
+<body>
+  <h2>Quản lý chủ đề ôn tập</h2>
+  <p class="hint">Bỏ chọn chủ đề nào thì thẻ trong đó sẽ không xuất hiện khi ôn tập nữa. "Sinh thêm" chạy ngầm -- đóng cửa sổ này vẫn tiếp tục, mở lại để xem tiến trình.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px;">Hiện</th>
+        <th>Chủ đề</th>
+        <th style="width:70px;">Số thẻ</th>
+        <th style="width:80px;">Đến hạn</th>
+        <th style="width:170px;">Thao tác</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div id="empty">Chưa có chủ đề nào — thêm qua tray menu "Thêm chủ đề mới..." hoặc "Nạp giáo trình...".</div>
+
+  <script src="topics.js"></script>
+</body>
+</html>

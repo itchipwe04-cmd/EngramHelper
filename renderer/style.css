@@ -74,7 +74,7 @@ html, body {
 #popup {
   position: absolute;
   display: none;
-  max-width: 300px;
+  max-width: 300px; /* mặc định cho ôn tập (câu ngắn) -- chế độ dịch sẽ ghi đè rộng hơn qua inline style */
   background: #F5F0E2;
   border: 2px solid #1B2A3A;
   padding: 16px 18px;
@@ -84,13 +84,71 @@ html, body {
   line-height: 1.5;
 }
 
+#yourAnswerInput {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid #1B2A3A;
+  background: #FFFDF7;
+  color: #1B2A3A;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+.text-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.text-row .popup-text,
+.text-row .popup-answer {
+  flex: 1;
+  margin-bottom: 0;
+}
+.speakBtn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid #1B2A3A;
+  color: #1B2A3A;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 7px;
+  border-radius: 2px;
+}
+.speakBtn:hover { background: #1B2A3A; color: #EAE3D0; }
+.speakBtn:disabled { opacity: 0.4; cursor: default; }
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  cursor: move; /* báo hiệu kéo thả được */
+  margin: -4px -6px 6px -4px; /* mở rộng vùng bấm/kéo ra sát viền popup */
+  padding: 4px 6px 4px 4px;
+}
+
 .popup-label {
   font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #A8502B;
-  margin-bottom: 6px;
 }
+
+#popupXBtn {
+  background: none;
+  border: none;
+  color: #1B2A3A;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 10px;
+}
+#popupXBtn:hover { color: #A8502B; }
 
 .popup-text { margin-bottom: 10px; font-weight: bold; }
 

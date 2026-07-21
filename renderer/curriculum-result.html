@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Phân tích giáo trình</title>
+<style>
+  body{
+    margin:0; padding:24px;
+    font-family:'Courier New', monospace;
+    background:#EAE3D0; color:#1B2A3A;
+  }
+  h2{ font-family: Georgia, serif; font-size:18px; margin:0 0 14px; }
+  #status{ font-size:13px; color:#4A5A68; margin-bottom:16px; }
+  .card{
+    background:#F5F0E2; border:2px solid #1B2A3A;
+    padding:16px 18px; display:none;
+  }
+  .label{ font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:#A8502B; margin-bottom:4px; }
+  .title{ font-family:Georgia,serif; font-size:16px; font-weight:bold; margin-bottom:10px; }
+  .units{ font-size:13px; margin-bottom:10px; line-height:1.6; }
+  .strategy{
+    font-size:13px; line-height:1.6; margin-bottom:10px;
+    border-left:3px solid #3F6E52; padding-left:10px; color:#2f4a3a;
+  }
+  .count{ font-size:12px; color:#4A5A68; }
+  .err{ color:#A8502B; font-weight:bold; }
+</style>
+</head>
+<body>
+  <h2>Phân tích giáo trình</h2>
+  <div id="status">Đang chuẩn bị...</div>
+  <div class="card" id="resultCard">
+    <div class="label">Chiến lược học đề xuất</div>
+    <div class="title" id="rTitle"></div>
+    <div class="units" id="rUnits"></div>
+    <div class="strategy" id="rStrategy"></div>
+    <div class="count" id="rCount"></div>
+  </div>
+
+  <script src="curriculum-result.js"></script>
+</body>
+</html>
