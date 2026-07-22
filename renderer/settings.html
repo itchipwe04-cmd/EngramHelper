@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Cài đặt AI</title>
+<style>
+  body{
+    margin:0; padding:22px;
+    font-family:'Courier New', monospace;
+    background:#EAE3D0; color:#1B2A3A;
+  }
+  h2{ font-family: Georgia, serif; font-size:18px; margin:0 0 4px; }
+  p.hint{ font-size:12px; color:#4A5A68; margin:0 0 14px; line-height:1.5; }
+  a{ color:#A8502B; }
+
+  .card{
+    background:#F5F0E2; border:2px solid #1B2A3A;
+    padding:14px 16px; margin-bottom:14px;
+  }
+  .card h3{ font-family:Georgia,serif; font-size:14px; margin:0 0 2px; }
+  .card .tag{ font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#3F6E52; margin-bottom:10px; }
+  .card .tag.notts{ color:#A8502B; }
+  .card .status{ font-size:11px; color:#4A5A68; margin-bottom:8px; }
+
+  label{ font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#4A5A68; display:block; margin-top:8px; }
+  input[type=text], input[type=password], select{
+    width:100%; box-sizing:border-box; padding:8px 10px;
+    font-family:inherit; font-size:13px;
+    border:1px solid #1B2A3A; background:#FFFDF7; color:#1B2A3A;
+    margin-top:3px;
+  }
+  .row2{ display:flex; gap:10px; }
+  .row2 > div{ flex:1; }
+
+  .saveOne{
+    margin-top:10px; padding:6px 14px; font-family:inherit; font-size:11px;
+    letter-spacing:0.5px; text-transform:uppercase;
+    background:#1B2A3A; color:#EAE3D0; border:none; cursor:pointer;
+  }
+  .savedMsg{ font-size:11px; color:#3F6E52; margin-left:8px; }
+
+  .orderNote{
+    font-size:11px; color:#4A5A68; background:#DED4B8; padding:8px 10px; margin-bottom:16px;
+  }
+</style>
+</head>
+<body>
+  <h2>Cài đặt AI</h2>
+  <p class="hint">Cài key cho 1 hay nhiều nhà tuỳ ý. App tự thử lần lượt theo thứ tự ưu tiên bên dưới -- nhà nào lỗi hoặc hết quota thì tự chuyển sang nhà tiếp theo đã cài key.</p>
+
+  <div class="orderNote">
+    Thứ tự ưu tiên (cố định): <b>Text</b>: Gemini → OpenAI → Claude → Tuỳ chỉnh. &nbsp;|&nbsp; <b>Đọc lên</b>: Gemini → OpenAI (chỉ 2 nhà này hỗ trợ TTS).
+  </div>
+
+  <div class="card">
+    <h3>Ngôn ngữ dịch</h3>
+    <div class="tag">áp dụng cho Dịch nhanh &amp; Dịch màn hình</div>
+    <select id="langSelect">
+      <option value="Tiếng Việt">Tiếng Việt</option>
+      <option value="Tiếng Anh">Tiếng Anh (English)</option>
+      <option value="Tiếng Trung">Tiếng Trung (中文)</option>
+      <option value="Tiếng Nga">Tiếng Nga (Русский)</option>
+      <option value="Tiếng Nhật">Tiếng Nhật (日本語)</option>
+      <option value="Tiếng Hàn">Tiếng Hàn (한국어)</option>
+      <option value="Tiếng Pháp">Tiếng Pháp (Français)</option>
+      <option value="Tiếng Đức">Tiếng Đức (Deutsch)</option>
+      <option value="Tiếng Tây Ban Nha">Tiếng Tây Ban Nha (Español)</option>
+      <option value="__custom__">Khác... (tự nhập)</option>
+    </select>
+    <input id="langCustomInput" type="text" placeholder="Nhập tên ngôn ngữ, vd: Tiếng Thái" style="display:none; margin-top:6px;">
+    <button class="saveOne" id="saveLangBtn">Lưu ngôn ngữ</button>
+    <span class="savedMsg" id="langSaved" style="display:none;">Đã lưu</span>
+  </div>
+
+  <div class="card">
+    <h3>Gemini (Google)</h3>
+    <div class="tag">Text + Đọc lên</div>
+    <div class="status" id="status-gemini"></div>
+    <label>API Key <a href="#" data-link="https://aistudio.google.com/apikey">(lấy key)</a></label>
+    <input type="password" id="key-gemini" placeholder="Để trống nếu không đổi">
+    <div class="row2">
+      <div><label>Model text</label><input type="text" id="model-gemini" placeholder="gemini-flash-latest"></div>
+      <div><label>Model TTS</label><input type="text" id="ttsModel-gemini" placeholder="gemini-3.1-flash-tts-preview"></div>
+    </div>
+    <label>Giọng đọc</label>
+    <input type="text" id="ttsVoice-gemini" placeholder="Kore">
+    <button class="saveOne" data-provider="gemini">Lưu Gemini</button>
+    <span class="savedMsg" data-saved="gemini" style="display:none;">Đã lưu</span>
+  </div>
+
+  <div class="card">
+    <h3>OpenAI</h3>
+    <div class="tag">Text + Đọc lên</div>
+    <div class="status" id="status-openai"></div>
+    <label>API Key <a href="#" data-link="https://platform.openai.com/api-keys">(lấy key)</a></label>
+    <input type="password" id="key-openai" placeholder="Để trống nếu không đổi">
+    <div class="row2">
+      <div><label>Model text</label><input type="text" id="model-openai" placeholder="gpt-4o-mini"></div>
+      <div><label>Model TTS</label><input type="text" id="ttsModel-openai" placeholder="tts-1"></div>
+    </div>
+    <label>Giọng đọc</label>
+    <input type="text" id="ttsVoice-openai" placeholder="alloy">
+    <button class="saveOne" data-provider="openai">Lưu OpenAI</button>
+    <span class="savedMsg" data-saved="openai" style="display:none;">Đã lưu</span>
+  </div>
+
+  <div class="card">
+    <h3>Claude (Anthropic)</h3>
+    <div class="tag notts">Chỉ Text -- Anthropic không có API đọc lên</div>
+    <div class="status" id="status-anthropic"></div>
+    <label>API Key <a href="#" data-link="https://console.anthropic.com/settings/keys">(lấy key)</a></label>
+    <input type="password" id="key-anthropic" placeholder="Để trống nếu không đổi">
+    <label>Model</label>
+    <input type="text" id="model-anthropic" placeholder="claude-sonnet-5">
+    <button class="saveOne" data-provider="anthropic">Lưu Claude</button>
+    <span class="savedMsg" data-saved="anthropic" style="display:none;">Đã lưu</span>
+  </div>
+
+  <div class="card">
+    <h3>Tuỳ chỉnh (OpenAI-compatible)</h3>
+    <div class="tag notts">Chỉ Text -- dùng cho DeepSeek, Qwen, Kimi, GLM...</div>
+    <div class="status" id="status-custom"></div>
+    <label>Tên hiển thị</label>
+    <input type="text" id="label-custom" placeholder="vd: DeepSeek">
+    <label>Base URL</label>
+    <input type="text" id="baseUrl-custom" placeholder="vd: https://api.deepseek.com/v1">
+    <label>API Key</label>
+    <input type="password" id="key-custom" placeholder="Để trống nếu không đổi">
+    <label>Model</label>
+    <input type="text" id="model-custom" placeholder="vd: deepseek-chat">
+    <button class="saveOne" data-provider="custom">Lưu Tuỳ chỉnh</button>
+    <span class="savedMsg" data-saved="custom" style="display:none;">Đã lưu</span>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

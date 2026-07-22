@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('engramAPI', {
   dueCount: () => ipcRenderer.invoke('due-count'),
   translateClipboard: () => ipcRenderer.invoke('translate-clipboard'),
   setFocusable: (focusable) => ipcRenderer.send('set-focusable', focusable),
+  speakText: (text) => ipcRenderer.invoke('speak-text', text),
+  openExternal: (url) => ipcRenderer.send('open-external', url),
 });

@@ -15,24 +15,110 @@ const yourAnswerInput = document.getElementById('yourAnswerInput');
 const ratingArea = document.getElementById('ratingArea');
 const closeBtn = document.getElementById('closeBtn');
 
-// ---- Đọc lên (Text-to-Speech) -- dùng Web Speech API sẵn có của Chromium, không cần thư viện ngoài ----
-// Đoán ngôn ngữ theo dấu tiếng Việt để chọn giọng đọc phù hợp (đủ dùng cho mục đích này).
-function detectLangCode(text) {
-  const viChars = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
-  return viChars.test(text) ? 'vi-VN' : 'en-US';
+// ---- Đọc lên (Text-to-Speech) -- dùng Gemini TTS, hỗ trợ mọi ngôn ngữ (không chỉ Anh/Việt) ----
+let currentAudio = null;
+
+function stopSpeaking() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  window.speechSynthesis?.cancel();
 }
 
-function speak(text) {
-  if (!text || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel(); // ngắt câu đang đọc dở nếu có, tránh đọc chồng
+// Dự phòng: giọng đọc offline có sẵn của Windows/Chromium, dùng khi Gemini TTS
+// lỗi hoặc hết quota -- không hay bằng nhưng vẫn đọc được, không để tính năng chết hẳn.
+// Nhận diện theo bảng chữ cái (rộng hơn chỉ Việt/Anh) để còn biết tìm đúng giọng cần thiếu.
+const LANG_PATTERNS = [
+  { code: 'vi-VN', name: 'Tiếng Việt', re: /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i },
+  { code: 'zh-CN', name: 'Tiếng Trung', re: /[\u4e00-\u9fff]/ },
+  { code: 'ja-JP', name: 'Tiếng Nhật', re: /[\u3040-\u30ff]/ },
+  { code: 'ko-KR', name: 'Tiếng Hàn', re: /[\uac00-\ud7af]/ },
+  { code: 'ru-RU', name: 'Tiếng Nga', re: /[\u0400-\u04FF]/ },
+  { code: 'ar-SA', name: 'Tiếng Ả Rập', re: /[\u0600-\u06FF]/ },
+  { code: 'th-TH', name: 'Tiếng Thái', re: /[\u0E00-\u0E7F]/ },
+];
+
+function detectLang(text) {
+  for (const p of LANG_PATTERNS) {
+    if (p.re.test(text)) return p;
+  }
+  return { code: 'en-US', name: 'Tiếng Anh' };
+}
+
+let cachedVoices = [];
+window.speechSynthesis?.addEventListener('voiceschanged', () => {
+  cachedVoices = window.speechSynthesis.getVoices();
+});
+cachedVoices = window.speechSynthesis?.getVoices() || [];
+
+function hasVoiceFor(langCode) {
+  const prefix = langCode.split('-')[0];
+  return cachedVoices.some((v) => v.lang && v.lang.toLowerCase().startsWith(prefix));
+}
+
+// Đã hỏi cài giọng cho ngôn ngữ nào trong phiên này rồi thì không hỏi lại nữa (đỡ làm phiền)
+const askedInstallFor = new Set();
+
+function speakFallback(text) {
+  if (!window.speechSynthesis) return false;
+  const lang = detectLang(text);
+
+  if (!hasVoiceFor(lang.code) && !askedInstallFor.has(lang.code)) {
+    askedInstallFor.add(lang.code);
+    const ok = window.confirm(
+      `Máy chưa có giọng đọc cho ${lang.name}. Mở Windows Settings để cài thêm giọng đọc không?\n\n` +
+      `(Windows sẽ tự tải khi bạn bấm "Add" trong đó -- app không tự cài được vì cần quyền quản trị máy.)`
+    );
+    if (ok) {
+      window.engramAPI?.openExternal('ms-settings:speech');
+    }
+    // Vẫn đọc thử luôn bằng giọng mặc định hiện có, còn hơn không đọc gì
+  }
+
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = detectLangCode(text);
+  utter.lang = lang.code;
   utter.rate = 0.95;
   window.speechSynthesis.speak(utter);
+  return true;
 }
 
-speakTextBtn.addEventListener('click', () => speak(popupText.textContent));
-speakAnswerBtn.addEventListener('click', () => speak(popupAnswer.textContent));
+async function speak(text, btn) {
+  if (!text) return;
+  stopSpeaking(); // ngắt câu đang đọc dở nếu có, tránh đọc chồng
+
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const result = await window.engramAPI.speakText(text);
+    if (result.error) {
+      const usedFallback = speakFallback(text);
+      btn.textContent = usedFallback ? '🔉' : '⚠'; // 🔉 = đang dùng giọng dự phòng (Gemini TTS lỗi/hết quota)
+      btn.title = usedFallback
+        ? `Gemini TTS lỗi, đang dùng giọng dự phòng của Windows. Lý do: ${result.error}`
+        : result.error;
+      setTimeout(() => { btn.textContent = originalLabel; btn.title = 'Đọc lên'; }, 4000);
+      return;
+    }
+    const audio = new Audio(`data:${result.mimeType || 'audio/wav'};base64,` + result.audioBase64);
+    currentAudio = audio;
+    audio.addEventListener('ended', () => { if (currentAudio === audio) currentAudio = null; });
+    audio.play();
+  } catch (err) {
+    const usedFallback = speakFallback(text);
+    btn.textContent = usedFallback ? '🔉' : '⚠';
+    btn.title = usedFallback ? `Gemini TTS lỗi, đang dùng giọng dự phòng. Lý do: ${err.message || err}` : (err.message || String(err));
+    setTimeout(() => { btn.textContent = originalLabel; btn.title = 'Đọc lên'; }, 4000);
+  } finally {
+    btn.disabled = false;
+    if (btn.textContent === '...') btn.textContent = originalLabel;
+  }
+}
+
+speakTextBtn.addEventListener('click', () => speak(popupText.textContent, speakTextBtn));
+speakAnswerBtn.addEventListener('click', () => speak(popupAnswer.textContent, speakAnswerBtn));
 
 let currentDueCard = null; // thẻ đang chờ nhắc (đến hạn theo FSRS)
 let activeCard = null;     // thẻ đang mở trong popup
@@ -216,7 +302,7 @@ document.querySelectorAll('.rate').forEach((btn) => {
     window.engramAPI?.answerCard(activeCard.id, rating).then(() => {
       answered = true;
       popup.style.display = 'none';
-      window.speechSynthesis?.cancel();
+      stopSpeaking();
       window.engramAPI?.setFocusable(false);
       if (activeIsDue) {
         badge.classList.remove('show');
@@ -230,7 +316,7 @@ document.querySelectorAll('.rate').forEach((btn) => {
 function closePopup() {
   if (popup.style.display === 'none') return;
   popup.style.display = 'none';
-  window.speechSynthesis?.cancel(); // đóng popup thì ngắt luôn nếu đang đọc dở
+  stopSpeaking(); // đóng popup thì ngắt luôn nếu đang đọc dở
   window.engramAPI?.setFocusable(false); // trả lại trạng thái không cướp focus app khác
   // Nếu đóng mà chưa chấm điểm 1 thẻ đến hạn -> nhả pending để main còn nhắc lại sau
   if (activeIsDue && !answered && activeCard) {

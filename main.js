@@ -6,6 +6,7 @@ const contentGenerator = require('./content-generator');
 const { extractText } = require('./doc-extract');
 const screenTranslate = require('./screen-translate');
 const ocr = require('./ocr');
+const tts = require('./tts');
 
 const logPath = path.join(__dirname, 'debug.log');
 function log(msg) {
@@ -116,7 +117,7 @@ function updateTrayMenu() {
     { label: 'Nạp giáo trình (PDF/Word)...', click: () => importCurriculum() },
     { label: 'Dịch màn hình (Ctrl+Shift+T)', click: () => openScreenTranslate() },
     { label: 'Quản lý chủ đề...', click: () => openTopicsManagerWindow() },
-    { label: 'Cài đặt Gemini API Key...', click: () => openApiKeyWindow() },
+    { label: 'Cài đặt AI...', click: () => openApiKeyWindow() },
     { type: 'separator' },
     { label: 'Thoát', click: () => app.quit() },
   ]);
@@ -140,9 +141,9 @@ function openTopicWindow() {
 
 function openApiKeyWindow() {
   const w = new BrowserWindow({
-    width: 440,
-    height: 360,
-    resizable: false,
+    width: 480,
+    height: 640,
+    resizable: true,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'renderer', 'preload-task.js'),
@@ -150,7 +151,7 @@ function openApiKeyWindow() {
       nodeIntegration: false,
     },
   });
-  w.loadFile(path.join(__dirname, 'renderer', 'api-key.html'));
+  w.loadFile(path.join(__dirname, 'renderer', 'settings.html'));
 }
 
 let topicsWindows = [];
@@ -212,11 +213,11 @@ async function generateMoreCardsJob(topicName, totalToAdd) {
 
 
 async function importCurriculum() {
-  if (!config.hasApiKey()) {
+  if (!config.hasAnyApiKey()) {
     dialog.showMessageBox({
       type: 'warning',
       title: 'Chưa có API Key',
-      message: 'Cần cài Gemini API Key trước khi nạp giáo trình. Vào tray menu -> "Cài đặt Gemini API Key..." trước.',
+      message: 'Cần cài ít nhất 1 API key trước khi nạp giáo trình. Vào tray menu -> "Cài đặt AI..." trước.',
     });
     return;
   }
@@ -277,11 +278,11 @@ async function importCurriculum() {
 let screenTranslateWin = null;
 
 async function openScreenTranslate() {
-  if (!config.hasApiKey()) {
+  if (!config.hasAnyApiKey()) {
     dialog.showMessageBox({
       type: 'warning',
       title: 'Chưa có API Key',
-      message: 'Cần cài Gemini API Key trước. Vào tray menu -> "Cài đặt Gemini API Key..." trước.',
+      message: 'Cần cài ít nhất 1 API key trước. Vào tray menu -> "Cài đặt AI..." trước.',
     });
     return;
   }
@@ -384,24 +385,39 @@ ipcMain.handle('generate-topic-cards', async (event, topic) => {
   return { label: result.topicLabel, count };
 });
 
-ipcMain.handle('save-api-key', (event, { key, model }) => {
-  config.setApiKey(key);
-  if (model) {
-    const cfg = config.get();
-    cfg.geminiModel = model;
-    config.setApiKey(cfg.geminiApiKey); // trigger save() lại toàn bộ config
-  }
+ipcMain.handle('save-provider-config', (event, { providerId, fields }) => {
+  config.setProviderConfig(providerId, fields);
   return true;
 });
 
-ipcMain.handle('get-api-key-status', () => {
+ipcMain.handle('save-target-language', (event, lang) => {
+  config.setTargetLanguage(lang);
+  return true;
+});
+
+ipcMain.handle('get-settings-status', () => {
   const cfg = config.get();
-  const hasKey = config.hasApiKey();
-  return {
-    hasKey,
-    last4: hasKey ? cfg.geminiApiKey.slice(-4) : '',
-    model: cfg.geminiModel,
-  };
+  const status = {};
+  Object.keys(cfg.providers).forEach((id) => {
+    const p = cfg.providers[id];
+    status[id] = {
+      ...p,
+      apiKey: undefined, // không gửi key thật ra renderer, chỉ gửi việc đã cài hay chưa + 4 ký tự cuối
+      hasKey: !!p.apiKey,
+      last4: p.apiKey ? p.apiKey.slice(-4) : '',
+    };
+  });
+  return { providers: status, targetLanguage: cfg.targetLanguage };
+});
+
+ipcMain.handle('speak-text', async (event, text) => {
+  try {
+    const result = await tts.synthesizeSpeech(text, (msg) => log('TTS: ' + msg));
+    return { audioBase64: result.buffer.toString('base64'), mimeType: result.mimeType };
+  } catch (err) {
+    log('speak-text ERROR: ' + (err && err.stack ? err.stack : err));
+    return { error: err.message || String(err) };
+  }
 });
 
 ipcMain.handle('translate-clipboard', async () => {
@@ -410,7 +426,7 @@ ipcMain.handle('translate-clipboard', async () => {
     return { error: 'Clipboard trống — bôi đen đoạn text rồi Ctrl+C trước đã.' };
   }
   try {
-    const result = await contentGenerator.translateText(text);
+    const result = await contentGenerator.translateText(text, config.get().targetLanguage);
     return { original: text, sourceLang: result.sourceLang, translated: result.translated };
   } catch (err) {
     return { error: err.message || String(err) };

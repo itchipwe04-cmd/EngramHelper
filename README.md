@@ -20,6 +20,31 @@ Tray menu → **"Cài đặt Gemini API Key..."** → lấy key miễn phí tạ
 
 Key được lưu ở `config.json` trong thư mục userData của app (KHÔNG nằm trong thư mục project, không lo lỡ tay commit lên GitHub).
 
+## Nhiều nhà AI (đa provider) + tự động chuyển nhà khi hết quota
+
+Tray menu → **"Cài đặt AI..."** — cài key cho 1 hay nhiều nhà tuỳ ý:
+
+| Nhà | Text | Đọc lên |
+|---|---|---|
+| Gemini (Google) | ✓ | ✓ |
+| OpenAI | ✓ | ✓ |
+| Claude (Anthropic) | ✓ | ✗ (Anthropic không có API TTS) |
+| Tuỳ chỉnh (OpenAI-compatible) | ✓ | ✗ |
+
+"Tuỳ chỉnh" dùng cho bất kỳ dịch vụ nào tương thích định dạng API của OpenAI (DeepSeek, Qwen, Kimi, GLM...) — chỉ cần điền Base URL + model đúng của nhà đó.
+
+**Tự động chuyển nhà**: khi 1 nhà bị lỗi hoặc hết quota, app tự thử nhà tiếp theo theo thứ tự ưu tiên cố định — không cần tự tay đổi. Chỉ áp dụng cho các nhà đã có key.
+- Thứ tự cho Text: Gemini → OpenAI → Claude → Tuỳ chỉnh
+- Thứ tự cho Đọc lên: Gemini → OpenAI
+
+Module điều phối nằm ở `providers/` — mỗi nhà 1 file adapter (`providers/gemini.js`, `openai.js`, `anthropic.js`, `custom.js`), `providers/index.js` xử lý logic thử lần lượt + fallback.
+
+## Ngôn ngữ dịch & giọng đọc
+
+Tray menu → **"Cài đặt Gemini API Key..."** → chọn **"Dịch sang ngôn ngữ nào"** (Việt, Anh, Trung, Nga, Nhật, Hàn, Pháp, Đức, Tây Ban Nha, hoặc tự nhập ngôn ngữ khác). Áp dụng cho cả "Dịch nhanh" lẫn "Dịch màn hình" — không cố định Anh↔Việt nữa. Nếu văn bản gốc đã đúng ngôn ngữ đích rồi, app tự dịch sang tiếng Anh thay vào đó.
+
+Nút loa 🔊 (đọc lên) dùng **Gemini TTS** (`gemini-3.1-flash-tts-preview`) — đọc được mọi ngôn ngữ AI hỗ trợ, không phụ thuộc giọng nói cài sẵn trên Windows như trước. Cần mạng + tốn thêm 1 lượt gọi API mỗi lần bấm đọc.
+
 ## Dịch màn hình
 
 Tray menu → **"Dịch màn hình"**, hoặc phím tắt **Ctrl+Shift+T** (dùng được mọi lúc, không cần app đang được focus).

@@ -12,7 +12,7 @@
   h2{ font-family: Georgia, serif; font-size:18px; margin:0 0 6px; }
   p.hint{ font-size:12px; color:#4A5A68; margin:0 0 16px; line-height:1.5; }
   label{ font-size:12px; text-transform:uppercase; letter-spacing:1px; color:#4A5A68; }
-  input[type=text], input[type=password]{
+  select, input[type=text], input[type=password]{
     width:100%; box-sizing:border-box; padding:10px 12px;
     font-family:inherit; font-size:14px;
     border:2px solid #1B2A3A; background:#F5F0E2; color:#1B2A3A;
@@ -38,6 +38,22 @@
 
   <label>Model (mặc định gemini-flash-latest, sửa nếu cần)</label>
   <input id="modelInput" type="text" value="gemini-flash-latest">
+
+  <label>Dịch sang ngôn ngữ nào (áp dụng cho Dịch nhanh & Dịch màn hình)</label>
+  <select id="langSelect">
+    <option value="Tiếng Việt">Tiếng Việt</option>
+    <option value="Tiếng Anh">Tiếng Anh (English)</option>
+    <option value="Tiếng Trung">Tiếng Trung (中文)</option>
+    <option value="Tiếng Nga">Tiếng Nga (Русский)</option>
+    <option value="Tiếng Nhật">Tiếng Nhật (日本語)</option>
+    <option value="Tiếng Hàn">Tiếng Hàn (한국어)</option>
+    <option value="Tiếng Pháp">Tiếng Pháp (Français)</option>
+    <option value="Tiếng Đức">Tiếng Đức (Deutsch)</option>
+    <option value="Tiếng Tây Ban Nha">Tiếng Tây Ban Nha (Español)</option>
+    <option value="__custom__">Khác... (tự nhập)</option>
+  </select>
+  <input id="langCustomInput" type="text" placeholder="Nhập tên ngôn ngữ, vd: Tiếng Thái" style="display:none;">
+  <p class="hint" style="margin-top:-8px;">Nếu văn bản gốc đã đúng ngôn ngữ này rồi, app sẽ tự dịch sang tiếng Anh thay vào đó.</p>
 
   <button id="saveBtn">Lưu</button>
   <div id="status"></div>

@@ -1,6 +1,7 @@
 const { desktopCapturer, screen } = require('electron');
 const ocr = require('./ocr');
 const contentGenerator = require('./content-generator');
+const config = require('./config');
 
 // Bước 1: chỉ chụp màn hình. Phải gọi TRƯỚC khi tạo/hiện bất kỳ cửa sổ dịch nào,
 // nếu không cửa sổ đó sẽ tự lọt vào chính bức ảnh chụp.
@@ -41,7 +42,7 @@ async function ocrAndTranslate(shot, onStatus, onLog) {
   }
 
   onStatus && onStatus(`Đang dịch ${lines.length} đoạn chữ...`);
-  const translations = await contentGenerator.translateBatch(lines.map((l) => l.text));
+  const translations = await contentGenerator.translateBatch(lines.map((l) => l.text), config.get().targetLanguage);
 
   const boxes = lines.map((l, i) => ({
     x: l.x / shot.scaleFactor,

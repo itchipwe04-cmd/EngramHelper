@@ -1,48 +1,13 @@
 const config = require('./config');
+const providers = require('./providers');
 
 const MARK = '@@@'; // dấu phân cách dùng chung cho mọi tác vụ, không phải ký tự hay gặp trong văn bản thường
 
+// Gọi qua module điều phối nhiều nhà AI -- tự thử lần lượt theo thứ tự ưu tiên,
+// nhà nào lỗi/hết quota thì tự chuyển sang nhà tiếp theo đã cấu hình.
 async function callGeminiRaw(prompt) {
-  const cfg = config.get();
-  if (!cfg.geminiApiKey) {
-    throw new Error('Chưa cấu hình Gemini API Key. Vào tray menu -> "Cài đặt API Key..." để nhập.');
-  }
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cfg.geminiModel}:generateContent?key=${cfg.geminiApiKey}`;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // tránh treo vô thời hạn nếu mạng có vấn đề
-
-  let res;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        // KHÔNG ép responseMimeType application/json cho bất kỳ tác vụ nào ở đây nữa --
-        // nội dung do AI sinh (câu ví dụ, hội thoại, thẻ ôn tập...) rất hay chứa dấu ngoặc
-        // kép lồng nhau, AI escape JSON không chuẩn -> JSON.parse dễ vỡ giữa chừng.
-        // Dùng dấu phân cách riêng (xem các hàm bên dưới), ổn định hơn nhiều với text tự do.
-      }),
-      signal: controller.signal,
-    });
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error('Hết thời gian chờ Gemini API (30s) — kiểm tra lại mạng rồi thử lại.');
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API lỗi (${res.status}): ${errText.slice(0, 300)}`);
-  }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Gemini không trả về nội dung hợp lệ.');
-  return text;
+  const result = await providers.generateTextWithFailover(prompt);
+  return result.text;
 }
 
 // Parse danh sách thẻ front/back theo dấu phân cách ${MARK}F<i>${MARK} / ${MARK}B<i>${MARK}.
@@ -167,16 +132,20 @@ ${CARD_FORMAT_INSTRUCTIONS}`;
 }
 
 // Dịch 1 đoạn text (tự nhận diện Anh<->Việt, hoặc ngôn ngữ khác)
-async function translateText(text) {
+// Dịch 1 đoạn text sang targetLang (ngôn ngữ đích do người dùng chọn, vd "Tiếng Việt",
+// "Tiếng Trung", "Tiếng Nga"...). Nếu văn bản gốc đã đúng bằng targetLang rồi thì
+// dịch sang tiếng Anh làm phương án dự phòng (đỡ dịch 1 đoạn ra chính nó).
+async function translateText(text, targetLang) {
   const trimmed = text.slice(0, 3000);
-  const prompt = `Dịch đoạn text sau. Nếu là tiếng Anh thì dịch sang tiếng Việt, nếu là tiếng Việt thì dịch sang tiếng Anh, ngôn ngữ khác thì dịch sang tiếng Việt.
+  const lang = targetLang || 'Tiếng Việt';
+  const prompt = `Dịch đoạn text sau sang ${lang}. Nếu văn bản gốc đã đúng là ${lang} rồi thì dịch sang tiếng Anh thay vào đó.
 
 Đoạn cần dịch:
 ${trimmed}
 
 Trả lời theo ĐÚNG định dạng sau, không thêm giải thích hay markdown nào khác:
 ${MARK}LANG${MARK}
-<tên ngôn ngữ gốc, ngắn gọn, vd: Tiếng Anh>
+<tên ngôn ngữ gốc của đoạn text, ngắn gọn, vd: Tiếng Anh>
 ${MARK}TRANSLATED${MARK}
 <bản dịch, chỉ text thuần>`;
 
@@ -192,10 +161,13 @@ ${MARK}TRANSLATED${MARK}
 
 // Dịch hàng loạt nhiều dòng cùng lúc, giữ đúng thứ tự (dùng cho dịch màn hình).
 // texts: string[] -> trả về string[] cùng độ dài, cùng thứ tự
-async function translateBatch(texts) {
+// Dịch hàng loạt nhiều dòng cùng lúc, giữ đúng thứ tự (dùng cho dịch màn hình), sang targetLang.
+// texts: string[] -> trả về string[] cùng độ dài, cùng thứ tự
+async function translateBatch(texts, targetLang) {
   if (!texts.length) return [];
+  const lang = targetLang || 'Tiếng Việt';
   const numbered = texts.map((t, i) => `${MARK}${i}${MARK}\n${t}`).join('\n');
-  const prompt = `Dịch từng đoạn dưới đây. Nếu là tiếng Anh thì dịch sang tiếng Việt, nếu là tiếng Việt thì dịch sang tiếng Anh, ngôn ngữ khác thì dịch sang tiếng Việt.
+  const prompt = `Dịch từng đoạn dưới đây sang ${lang}. Nếu 1 đoạn đã đúng là ${lang} rồi thì dịch đoạn đó sang tiếng Anh thay vào đó.
 
 Mỗi đoạn bắt đầu bằng dòng đánh dấu dạng ${MARK}<số>${MARK} rồi tới nội dung cần dịch của đoạn đó.
 Trả lời theo ĐÚNG định dạng sau cho từng đoạn, giữ nguyên số thứ tự, không bỏ sót, không gộp đoạn, không thêm giải thích hay markdown nào khác:
